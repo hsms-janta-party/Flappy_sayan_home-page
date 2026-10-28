@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Flappy Sayan: the game</title>
+<link rel="icon" href="sayan_head.png">
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--sky:#3aa9e8;--sky2:#8fd3f7;--pipe:#5fd13b;--pipe-d:#1f8a1f;--sand:#f7a45b;--ink:#1b1530;--gold:#ffc21a;--pink:#e8338f;--paper:#fffaf0;--mute:#4b4570;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--sky:#3aa9e8;--ink:#1b1530}}
+:root[data-theme="dark"]{--sky:#3aa9e8;--ink:#1b1530}
+html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--ink);color:var(--paper);font-family:Nunito,system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.6;overflow-x:hidden}
+h1,h2,h3{font-family:"Lilita One","Arial Rounded MT Bold",Impact,sans-serif;font-weight:400;margin:0;line-height:1.05}
+a{color:inherit}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px;position:relative}
+:focus-visible{outline:3px solid #fff;outline-offset:3px}
+/* hero */
+.hero{position:relative;background:linear-gradient(var(--sky),var(--sky2));overflow:hidden;color:var(--ink);text-align:center;padding:28px 0 0}
+.pipe{position:absolute;width:76px;background:linear-gradient(90deg,#8cf24d,var(--pipe) 40%,var(--pipe-d));border:4px solid #0f5a0f;z-index:0}
+.pipe::after{content:"";position:absolute;left:-10px;right:-10px;height:34px;background:inherit;border:4px solid #0f5a0f}
+.pipe.t{top:0;height:130px}.pipe.t::after{bottom:-4px}
+.pipe.b{bottom:70px;height:150px}.pipe.b::after{top:-4px}
+.p1{left:3%}.p2{right:3%}.p3{left:14%;display:block}.p4{right:15%}
+.cloud{position:absolute;height:34px;width:110px;background:#fff;box-shadow:24px -18px 0 0 #fff,-22px 8px 0 -4px #fff;opacity:.9;animation:drift 40s linear infinite}
+@keyframes drift{from{transform:translateX(-160px)}to{transform:translateX(120vw)}}
+.hero-in{position:relative;z-index:2;padding:10px 0 70px}
+.brand{width:min(300px,68vw);aspect-ratio:1;border-radius:50%;box-shadow:0 18px 50px rgba(27,21,48,.45);animation:bob 3.2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-14px)}}
+.hero h1{font-size:clamp(2.8rem,9vw,5.6rem);color:var(--gold);-webkit-text-stroke:2px var(--ink);paint-order:stroke fill;text-shadow:0 6px 0 var(--ink);margin-top:20px}
+.hero p{font-size:1.2rem;font-weight:700;max-width:46ch;margin:14px auto 26px}
+.btns{display:flex;flex-wrap:wrap;gap:14px;justify-content:center}
+.btn{display:inline-block;padding:14px 30px;border-radius:14px;font-family:"Lilita One",Impact,sans-serif;font-size:1.3rem;text-decoration:none;border:4px solid var(--ink);box-shadow:0 6px 0 var(--ink);transition:transform .1s,box-shadow .1s}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--ink)}
+.btn.play{background:var(--gold);color:var(--ink)}
+.btn.alt{background:#fff;color:var(--ink)}
+.floor{position:relative;z-index:2;height:70px;background:repeating-linear-gradient(90deg,#d9a04a 0 24px,#c98b36 24px 48px);border-top:8px solid #7ed34a;box-shadow:inset 0 10px 0 #5cb82f}
+/* sections */
+section{padding:72px 0}
+section h2{font-size:clamp(2rem,5vw,3rem);color:var(--gold);margin-bottom:10px}
+.lead{color:#cfc9ee;max-width:58ch;margin:0 0 34px;font-size:1.08rem}
+.devices{display:grid;grid-template-columns:1fr 1.8fr 2.2fr;gap:28px;align-items:end}
+.dev{margin:0}
+.dev figcaption{margin-top:12px;font-weight:800}
+.dev figcaption small{display:block;color:#cfc9ee;font-weight:400}
+.frame{border:8px solid #05030f;box-shadow:0 0 0 2px #3a3170;overflow:hidden;background:#1b1530}
+.ph{aspect-ratio:9/17;border-radius:26px}.mon{aspect-ratio:16/10;border-radius:10px}.tv{aspect-ratio:16/9;border-radius:6px;border-width:6px}
+.stand{height:14px;width:30%;margin:0 auto;background:#05030f;border-radius:0 0 8px 8px}
+.gv{display:block;width:100%;height:100%;object-fit:contain;background:#1b1530}
+.scene{position:relative;height:100%;background:linear-gradient(var(--sky),var(--sky2));overflow:hidden}
+.scene i{position:absolute;width:15%;background:linear-gradient(90deg,#8cf24d,var(--pipe) 40%,var(--pipe-d));border:3px solid #0f5a0f;left:100%;animation:run 5s linear infinite}
+.scene i.t{top:0;height:34%}.scene i.b{bottom:12%;height:30%}
+.scene i.s{animation-delay:-2.5s}.scene i.s.t{height:22%}.scene i.s.b{height:42%}
+@keyframes run{to{left:-20%}}
+.scene img{position:absolute;left:22%;top:38%;width:20%;animation:flap 1.3s ease-in-out infinite;z-index:2}
+@keyframes flap{50%{transform:translateY(-80%) rotate(-12deg)}}
+.scene::after{content:"";position:absolute;left:0;right:0;bottom:0;height:12%;background:repeating-linear-gradient(90deg,#d9a04a 0 12px,#c98b36 12px 24px);border-top:4px solid #5cb82f}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.card{background:#2a2250;border:3px solid #3a3170;border-radius:18px;padding:22px}
+.card h3{font-size:1.3rem;color:var(--sky2);margin-bottom:8px}
+.card p{margin:0;color:#cfc9ee}
+.cast{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;max-width:560px}
+.cast figure{margin:0;background:#2a2250;border:3px solid #3a3170;border-radius:18px;padding:18px;text-align:center}
+.cast img{height:120px;max-width:100%;object-fit:contain}
+.cast .wide img{height:120px}
+.cast figcaption{margin-top:10px;font-weight:800}
+.cast small{display:block;font-weight:400;color:#cfc9ee}
+.dl{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.dl .opt{display:block;width:100%;font:inherit;color:inherit;text-align:left;cursor:pointer;text-decoration:none;background:#2a2250;border:3px solid #3a3170;border-radius:18px;padding:24px}
+.dl .opt:hover{border-color:var(--gold)}
+.dl .ico{width:40px;height:40px;margin-bottom:10px;fill:var(--gold)}
+.dl .tip{display:block;margin-top:10px;font-weight:800;color:var(--sky2);min-height:1.6em}
+#download:target .dl{animation:pulse 1.2s ease 2}
+@keyframes pulse{50%{transform:scale(1.02)}}
+.bar{position:sticky;top:0;z-index:20;background:rgba(27,21,48,.92);backdrop-filter:blur(8px);padding-top:env(safe-area-inset-top,0px)}
+.bar .wrap{display:flex;align-items:center;justify-content:space-between;min-height:56px}
+.bar b{font-family:"Lilita One",Impact,sans-serif;font-weight:400;font-size:1.3rem;color:var(--gold);display:flex;align-items:center;gap:10px}
+.bar b img{width:34px;height:34px;border-radius:50%}
+.ig{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;border-radius:999px;border:2px solid #3a3170;text-decoration:none;font-weight:800}
+.ig:hover{border-color:var(--gold)}
+.ig svg{width:20px;height:20px;fill:currentColor}
+footer .ig{margin:12px 0 18px}
+.dl strong{display:block;font-family:"Lilita One",Impact,sans-serif;font-weight:400;font-size:1.4rem;color:var(--gold)}
+.dl span{color:#cfc9ee}
+
+footer{padding:40px 0;text-align:center;color:#a49fc9;border-top:3px solid #3a3170}
+footer img{width:64px;border-radius:50%;display:block;margin:0 auto 10px}
+@media (max-width:820px){.bar .ig span{display:none}.ig{padding:0 12px}.btn{width:100%;text-align:center}.btns{width:100%;max-width:340px;margin:0 auto}section{padding:52px 0}.dev .ph{margin:0 auto}.dev figcaption{text-align:center}.cast img{height:96px}.devices,.grid3,.dl{grid-template-columns:1fr}.cast{grid-template-columns:1fr 1fr}.dev .ph{max-width:200px}.p3,.p4{display:none}.pipe{width:56px}}
+@media (prefers-reduced-motion:reduce){.cloud,.brand,.scene i,.scene img{animation:none}.scene i{left:60%}}
+</style>
+</head>
+<body>
+<div class="bar"><div class="wrap"><b><img src="sayan_head.png" alt="">Flappy Sayan</b><a class="ig" href="https://www.instagram.com/hsms_janta_party/" target="_blank" rel="noopener" aria-label="Instagram: hsms_janta_party"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3.5a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9zm0 2a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM17.2 5.6a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2z"/></svg><span>@hsms_janta_party</span></a></div></div>
+<header class="hero">
+<i class="pipe t p1"></i><i class="pipe b p1"></i><i class="pipe t p2"></i><i class="pipe b p2"></i>
+<i class="pipe t p3"></i><i class="pipe b p4"></i>
+<i class="cloud" style="top:12%;left:0"></i><i class="cloud" style="top:40%;left:0;animation-delay:-18s"></i>
+<div class="wrap hero-in">
+<img class="brand" src="icon.png" alt="Flappy Sayan logo: a witch with a black cat flying on a broom through green pipes">
+<h1>Flappy Sayan</h1>
+<p>Tap to fly. Slip through the pipes. See how far you can get before the witch catches up.</p>
+<div class="btns">
+<a class="btn play" href="https://flappy-sayan.netlify.app" target="_blank" rel="noopener">Play online</a>
+<a class="btn alt" href="#download">Download for mobile</a>
+</div>
+</div>
+<div class="floor"></div>
+</header>
+
+<section id="devices"><div class="wrap">
+<h2>Play on any screen</h2>
+<p class="lead">The game fits itself to your screen. Use your thumb on a phone, the mouse or keyboard on a monitor, or open it in the TV browser for a big-screen session.</p>
+<div class="devices">
+<figure class="dev"><div class="frame ph"><video class="gv" muted loop playsinline autoplay preload="metadata" poster="stop.jpeg" aria-label="Flappy Sayan gameplay on a phone"></video></div><figcaption>Phone<small>Tap the screen</small></figcaption></figure>
+<figure class="dev"><div class="frame mon"><video class="gv" muted loop playsinline autoplay preload="metadata" poster="stop.jpeg" aria-label="Flappy Sayan gameplay on a monitor"></video></div><div class="stand"></div><figcaption>Monitor<small>Click, or press Space or the Up arrow</small></figcaption></figure>
+<figure class="dev"><div class="frame tv"><video class="gv" muted loop playsinline autoplay preload="metadata" poster="stop.jpeg" aria-label="Flappy Sayan gameplay on a TV"></video></div><div class="stand"></div><figcaption>TV<small>Open the game in the TV browser</small></figcaption></figure>
+</div>
+</div></section>
+
+<section><div class="wrap">
+<h2>How to play</h2>
+<p class="lead">One button does everything.</p>
+<div class="grid3">
+<div class="card"><h3>Tap to flap</h3><p>Tap, click, or press Space, Up arrow or Enter to lift off. Let go and you fall.</p></div>
+<div class="card"><h3>Mind the gaps</h3><p>Fly between the pipes. Every pipe you pass is one point. Hit one and it’s game over.</p></div>
+<div class="card"><h3>Beat your best</h3><p>Your best score is saved on your device, so every run is a chance to top it. Music and sound effects play along.</p></div>
+</div>
+</div></section>
+
+<section><div class="wrap">
+<h2>Meet the cast</h2>
+<p class="lead">Things get stranger the higher you score.</p>
+<div class="cast">
+<figure><img src="sayan_head.png" alt="Sayan flying"><figcaption>Sayan<small>The player. You control him.</small></figcaption></figure>
+<figure class="wide"><img src="fly.png" alt="Witch riding a broom with a cat"><figcaption>The witch<small>She flies in and follows you around.</small></figcaption></figure>
+</div>
+</div></section>
+
+<section id="download"><div class="wrap">
+<h2>Download for mobile</h2>
+<p class="lead">Choose your phone to get the game.</p>
+<div class="dl">
+<button class="opt" id="android" type="button"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.5 8.2l1.6-2.8a.4.4 0 0 0-.7-.4l-1.6 2.8a9.6 9.6 0 0 0-8.6 0L6.6 5a.4.4 0 0 0-.7.4l1.6 2.8A8.2 8.2 0 0 0 3.5 15h17a8.2 8.2 0 0 0-3-6.8zM8.5 12.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2zm7 0a1 1 0 1 1 0-2 1 1 0 0 1 0 2zM3.5 16v3a1.5 1.5 0 0 0 3 0v-3h-3zm14 0v3a1.5 1.5 0 0 0 3 0v-3h-3zM7 16v4.5A1.5 1.5 0 0 0 8.5 22h1a1.5 1.5 0 0 0 1.5-1.5V19h2v1.5a1.5 1.5 0 0 0 1.5 1.5h1a1.5 1.5 0 0 0 1.5-1.5V16H7z"/></svg><strong>Android</strong><span>Download the game and install it on your phone.</span><span class="tip" id="atip" role="status"></span></button>
+<button class="opt" id="ios" type="button"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.4 12.6c0-2.3 1.9-3.4 2-3.5a4.3 4.3 0 0 0-3.4-1.8c-1.4-.2-2.8.9-3.5.9s-1.8-.8-3-.8A4.5 4.5 0 0 0 4.7 10c-1.6 2.8-.4 6.900 1.200 9.200.8 1.100 1.700 2.300 2.900 2.300 1.200 0 1.600-.8 3-.8s1.800.8 3 .8 2-1.100 2.800-2.200a9.700 9.700 0 0 0 1.200-2.600 4 4 0 0 1-2.400-3.600zM14.200 5.800A4 4 0 0 0 15.100 3a4.100 4.100 0 0 0-2.700 1.400 3.800 3.800 0 0 0-.9 2.800 3.400 3.400 0 0 0 2.700-1.400z"/></svg><strong>iOS</strong><span>Open the game in Safari, tap Share, then choose Add to Home Screen.</span><span class="tip" id="itip" role="status"></span></button>
+</div>
+</div></section>
+
+<footer><div class="wrap"><img src="icon.png" alt="">Flappy Sayan. Made with love and a lot of support.<br><a class="ig" href="https://www.instagram.com/hsms_janta_party/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3.5a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9zm0 2a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM17.2 5.6a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2z"/></svg><span>Follow @hsms_janta_party</span></a></div></footer>
+<script>
+/* Android download: paste your APK link below (and remove the comment marks) to turn the download on. */
+// var ANDROID_URL="https://YOUR-LINK/flappy-sayan.apk";
+
+var VIDEO="video.mp4";
+document.querySelectorAll(".gv").forEach(function(v){v.src=VIDEO;var p=v.play();if(p&&p.catch)p.catch(function(){})});
+var ANDROID_URL="";
+document.getElementById("android").addEventListener("click",function(){
+  var tip=document.getElementById("atip");
+  if(!ANDROID_URL){tip.textContent="Android download is coming soon.";return}
+  var a=document.createElement("a");a.href=ANDROID_URL;a.setAttribute("download","");document.body.appendChild(a);a.click();a.remove();
+  tip.textContent="Your download is starting.";
+});
+
+/* iOS: link to the web version of the game. Leave empty to show "coming soon". */
+var IOS_URL="";
+document.getElementById("ios").addEventListener("click",function(){
+  var tip=document.getElementById("itip");
+  if(!IOS_URL){tip.textContent="iOS version is coming soon.";return}
+  var a=document.createElement("a");a.href=IOS_URL;a.target="_blank";a.rel="noopener";document.body.appendChild(a);a.click();a.remove();
+  tip.textContent="Opened! In Safari, tap Share, then Add to Home Screen.";
+});
+;
+</script>
+</body>
+</html>
