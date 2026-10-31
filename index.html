@@ -211,16 +211,15 @@ footer img{width:64px;border-radius:50%;display:block;margin:0 auto 10px}
 
 <script>
 /* ===== SETTINGS ===== */
-var API="https://script.google.com/macros/s/AKfycbwZ99B2l1UQVIbOjE89YZiRVKniyOxDhINn715vGv79vKlZoGlFSEYDVyC1JkxGmawhvQ/exec";   // Google Apps Script web app URL (ends in /exec)
+var API="https://script.google.com/macros/s/AKfycbyJ47OxjonVIDXEw7Ilcv_n4MG3zS9JeJWohumQyWNa5YDPpn5OY_uDDTIWvpllVCfTTg/exec";   // Google Apps Script web app URL (ends in /exec)
 var GAME="https://flappy-sayan.netlify.app/";
 
 /* ==================== */
 
-/* Android download: paste your APK link below (and remove the comment marks) to turn the download on. */
-// var ANDROID_URL="https://YOUR-LINK/flappy-sayan.apk";
-
 var VIDEO="video.mp4";
 document.querySelectorAll(".gv").forEach(function(v){v.src=VIDEO;var p=v.play();if(p&&p.catch)p.catch(function(){})});
+
+/* Android download: put your APK link between the quotes to turn the download on. */
 var ANDROID_URL="";
 document.getElementById("android").addEventListener("click",function(){
   var tip=document.getElementById("atip");
@@ -271,7 +270,7 @@ function openModal(m,note){
 function closeModal(){$("modal").classList.remove("open")}
 
 $("authBtn").addEventListener("click",function(){
-  if(acct){acct=null;localStorage.removeItem("sayanAcct");paintAuth();loadBoard();return}
+  if(acct){acct=null;try{localStorage.removeItem("sayanAcct")}catch(e){}paintAuth();loadBoard();return}
   openModal("in");
 });
 $("tabIn").addEventListener("click",function(){setMode("in")});
